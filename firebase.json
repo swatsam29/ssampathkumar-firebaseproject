@@ -8,7 +8,6 @@
     ]
   },
   "hosting": {
-    "site" : "a3swatsam",
     "public": "public",
     "ignore": [
       "firebase.json",
