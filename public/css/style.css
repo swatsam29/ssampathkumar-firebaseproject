@@ -30,3 +30,10 @@ input {
     border-width: 0 0 2px 0;
     width: 100%;
 }
+
+textarea {
+
+    width: 900px;
+    height: 90px;
+
+}
