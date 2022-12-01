@@ -4,8 +4,9 @@ import { unauthorizedAccess } from './unauthorized_access_message.js';
 import { currentUser } from '../controller/firebase_auth.js';
 import { info } from './util.js';
 import { DEV } from '../model/constants.js';
-import { addCommunity, getCommunity } from '../controller/firestore_controller.js';
+import { addCommunity, getCommunity, deleteCommunity } from '../controller/firestore_controller.js';
 
+let x;
 export function addEventListeners() {
     Elements.menus.community.addEventListener('click', () => {
         history.pushState(null, null, routePath.COMMUNITY);
@@ -18,12 +19,14 @@ export async function community_page() {
         return;
     }
 
+
     let html;
     const response = await fetch('/viewpage/templates/community_page.html', { cache: 'no-store' });
     html = await response.text();
     Elements.root.innerHTML = html;
     document.getElementById('button-create').addEventListener('click', create);
     commenthistory();
+    
 }
 
 async function create(event) {
@@ -49,23 +52,21 @@ async function save(event) {
     let x = document.getElementById('save-text').value;
     console.log(x);
     //document.getElementById('save-button').innerHTML = html;
-    if(x!=""){
-        
-    
-    const textmessage = {
-        email: currentUser.email,
-        message: x,
-        timestamp: Date.now(),
-    };
-    try {
-        await addCommunity(textmessage);
-        info('Message added', 'Text message added to firebase :D');
-        community_page();
-    } catch (e) {
-        info('Fail', `Failed to save message ${e}`);
-        if (DEV) console.log('failed to save:', e);
+    if (x != "") {
+        const textmessage = {
+            email: currentUser.email,
+            message: x,
+            timestamp: Date.now(),
+        };
+        try {
+            await addCommunity(textmessage);
+            info('Message added', 'Text message added to firebase :D');
+            community_page();
+        } catch (e) {
+            info('Fail', `Failed to save message ${e}`);
+            if (DEV) console.log('failed to save:', e);
+        }
     }
-}
 }
 
 async function commenthistory() {
@@ -82,13 +83,13 @@ async function commenthistory() {
             html += `
             <tr>
             <td> 
-            <div>By: ${history[i].email} (Posted At ${new Date(history[i].timestamp).toLocaleString()})</div>  
+            <div class = "bg-success text-white">By: ${history[i].email} (Posted At ${new Date(history[i].timestamp).toLocaleString()})</div>  
                 <br>
                 ${history[i].message}
             </td>
             <td>
-            <button id="edit-button" type = "submit" class= "btn btn-outline-danger">Edit</button>
-            <button id="delete-button" type = "submit" class= "btn btn-outline-secondary">Delete</button>
+            <button id="edit-button" type = "submit" class= "btn btn-outline-primary">Edit</button>
+            <button id="delete-button" type = "submit" class= "btn btn-outline-danger">Delete</button>
             </td>
             <tr>
             `;
@@ -105,10 +106,19 @@ async function commenthistory() {
     function editbutton() {
         community_page();
     }
-    function deletebutton() {
-
-
-       document.getElementById('row').remove();
-
+    async function deletebutton() {
+          const textmessage = {
+            email: currentUser.email,
+            message: x,
+            timestamp: Date.now(),
+        };
+        try {
+            await deleteCommunity(textmessage);
+            info('Message deleted', 'Text message deleted from firebase :D');
+            community_page();
+        } catch (e) {
+            info('Fail', `Failed to save message ${e}`);
+            if (DEV) console.log('failed to save:', e);
+        }
     }
 }

@@ -1,4 +1,6 @@
-import { getFirestore, collection, addDoc, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore.js"
+import { 
+    getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, deleteDoc, 
+ } from "https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore.js"
 
 const db = getFirestore();
 
@@ -46,3 +48,8 @@ snapShot.forEach( doc => {
 return history;
 }
 
+export async function deleteCommunity(textmessage){
+
+await deleteDoc(doc(db, CommunityCollection), textmessage);
+
+}
