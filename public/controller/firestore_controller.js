@@ -62,10 +62,12 @@ export async function deleteCommunity(doc_id) {
 
 }
 
-export async function updateCommunity(mm) {
-    //const textmessage = doc(db, "cities", "DC");
+export async function updateCommunity(new_data, doc_id) {
+    const textmessage = doc(db, CommunityCollection, doc_id);
 
-    await updateDoc(washingtonRef, {
-        capital: true
+    await updateDoc(textmessage, {
+        email: new_data.email,
+        message: new_data.message,
+        timestamp: new_data.timestamp,
     });
 }
