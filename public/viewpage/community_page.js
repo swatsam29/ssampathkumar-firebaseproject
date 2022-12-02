@@ -5,8 +5,10 @@ import { currentUser } from '../controller/firebase_auth.js';
 import { info } from './util.js';
 import { DEV } from '../model/constants.js';
 import { addCommunity, getCommunity, deleteCommunity } from '../controller/firestore_controller.js';
+import * as Util from './util.js'
 
 let x;
+let doc_ids=[];
 export function addEventListeners() {
     Elements.menus.community.addEventListener('click', () => {
         history.pushState(null, null, routePath.COMMUNITY);
@@ -70,6 +72,7 @@ async function save(event) {
 }
 
 async function commenthistory() {
+    doc_ids=[];
     let history;
     let html = `
     <tr>
@@ -78,6 +81,7 @@ async function commenthistory() {
     </tr>
     `;
     try {
+        let count=0;
         history = await getCommunity();
         for (let i = 0; i < history.length; i++) {
             html += `
@@ -85,36 +89,78 @@ async function commenthistory() {
             <td> 
             <div class = "bg-success text-white">By: ${history[i].email} (Posted At ${new Date(history[i].timestamp).toLocaleString()})</div>  
                 <br>
+                <div id="message-${history[i].t}">
                 ${history[i].message}
-            </td>
+                </div>
+            </td>`
+            if(currentUser.email == history[i].email){
+            html+=`
             <td>
-            <button id="edit-button" type = "submit" class= "btn btn-outline-primary">Edit</button>
-            <button id="delete-button" type = "submit" class= "btn btn-outline-danger">Delete</button>
+            <button id="edit-button${count}" type = "submit" class= "btn btn-outline-primary">Edit</button>
+            <button id="delete-button${count}" type = "submit" class= "btn btn-outline-danger">Delete</button>
             </td>
             <tr>
             `;
+            count++;
+            doc_ids.push(history[i].t);
+            }
+            
         }
         document.getElementById('message-table').innerHTML = html;
-        document.getElementById
-        document.getElementById('edit-button').addEventListener('click', editbutton);
-        document.getElementById('delete-button').addEventListener('click', deletebutton);
+        
+        for (let index = 0; index < count; index++) {
+            document.getElementById("delete-button"+index).addEventListener('click',deletebutton);
+            
+        }
+        for (let index = 0; index < count; index++) {
+            document.getElementById("edit-button"+index).addEventListener('click',editbutton);
+            
+        }
+
+        // document.getElementById('edit-button').addEventListener('click', editbutton);
+        // document.getElementById('delete-button').addEventListener('click', deletebutton);
 
     } catch (e) {
         info('Fail', `Failed to load message ${e}`);
         if (DEV) console.log('failed to load', e);
     }
     function editbutton() {
-        community_page();
+        let docidtoedit="";
+        console.log(this.id);
+        for (let index = 0; index < doc_ids.length; index++) {
+            
+            if(this.id==("edit-button"+index)){
+                docidtoedit = doc_ids[index];
+                break;
+            }
+        }
+        let html = `
+        <div>
+            <textarea id= "edit-text" name= "content" required minlength= "3" > 
+            <br>
+            <button id="save-button" type = "submit" class= "btn btn-outline-danger">Save</button>
+            <button id="cancel-button" type = "submit" class= "btn btn-outline-secondary">Cancel</button>
+        </div>
+            `;
+    document.getElementById('message-'+docidtoedit).innerHTML = html;
     }
     async function deletebutton() {
-          const textmessage = {
-            email: currentUser.email,
-            message: x,
-            timestamp: Date.now(),
-        };
+        let docidtodel="";
+        console.log(this.id);
+        for (let index = 0; index < doc_ids.length; index++) {
+            
+            if(this.id==("delete-button"+index)){
+                docidtodel = doc_ids[index];
+                break;
+            }
+        }
+        console.log(docidtodel);
+        console.log(docidtodel.length);
         try {
-            await deleteCommunity(textmessage);
-            info('Message deleted', 'Text message deleted from firebase :D');
+            const r=confirm('Message deleted', 'Text message deleted from firebase :D');
+            if (!r) return;
+            await deleteCommunity(docidtodel);
+            
             community_page();
         } catch (e) {
             info('Fail', `Failed to save message ${e}`);

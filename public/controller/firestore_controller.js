@@ -1,11 +1,15 @@
-import { 
-    getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, deleteDoc, 
- } from "https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore.js"
+import {
+    getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, deleteDoc, updateDoc
+} from "https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore.js"
+
+import { Textmessage } from "../model/community_page.js";
 
 const db = getFirestore();
 
 const TicTacToeGameCollection = 'tictactoe_game';
 const CommunityCollection = 'community_feed';
+
+
 
 
 export async function addTicTacToeGameHistory(gamePlay) {
@@ -14,18 +18,18 @@ export async function addTicTacToeGameHistory(gamePlay) {
 }
 
 export async function getTicTacToeGameHistory(email) {
-    let history= [];
+    let history = [];
     const q = query(
         collection(db, TicTacToeGameCollection),
-        where('email','==', email),
-        orderBy('timestamp','desc'),
+        where('email', '==', email),
+        orderBy('timestamp', 'desc'),
     );
-const snapShot = await getDocs(q);
-snapShot.forEach( doc => {
-    const {email, winner, moves, timestamp } = doc.data();
-    history.push({email, winner, moves, timestamp});
-});
-return history;
+    const snapShot = await getDocs(q);
+    snapShot.forEach(doc => {
+        const { email, winner, moves, timestamp } = doc.data();
+        history.push({ email, winner, moves, timestamp });
+    });
+    return history;
 }
 
 export async function addCommunity(textmessage) {
@@ -35,21 +39,33 @@ export async function addCommunity(textmessage) {
 }
 
 export async function getCommunity() {
-    let history= [];
+    let history = [];
     const q = query(
         collection(db, CommunityCollection),
-        orderBy('timestamp','desc'),
+        orderBy('timestamp', 'desc'),
     );
-const snapShot = await getDocs(q);
-snapShot.forEach( doc => {
-    const {email, message, timestamp } = doc.data();
-    history.push({email, message, timestamp});
-});
-return history;
+    const snapShot = await getDocs(q);
+    
+    snapShot.forEach(doc => {
+        // const t = new Textmessage(doc.data());
+        // t.set_docId(doc.id);
+        let t=doc.id;
+        const { email, message, timestamp, } = doc.data();
+        history.push({ email, message, timestamp, t});
+    });
+    return history;
 }
 
-export async function deleteCommunity(textmessage){
+export async function deleteCommunity(doc_id) {
 
-await deleteDoc(doc(db, CommunityCollection), textmessage);
+    await deleteDoc(doc(db, CommunityCollection, doc_id));
 
+}
+
+export async function updateCommunity(mm) {
+    //const textmessage = doc(db, "cities", "DC");
+
+    await updateDoc(washingtonRef, {
+        capital: true
+    });
 }
